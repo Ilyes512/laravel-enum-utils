@@ -1,0 +1,88 @@
+{
+    "name": "ilyes512/laravel-enum-utils",
+    "type": "library",
+    "description": "A Laravel enum-utils package.",
+    "keywords": [
+        "package",
+        "laravel",
+        "enum-utils"
+    ],
+    "license": "MIT",
+    "require": {
+        "php": ">=8.3",
+        "illuminate/support": "^11.0",
+        "webmozart/assert": "^1.10"
+    },
+    "require-dev": {
+        "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
+        "ilyes512/code-style": "^2.0-dev",
+        "larastan/larastan": "^2.9",
+        "laravel/tinker": "^2.9",
+        "mockery/mockery": "^1.6",
+        "orchestra/testbench": "^9.1",
+        "overtrue/phplint": "^9.3",
+        "phpstan/phpstan-mockery": "^1.1",
+        "phpstan/phpstan-webmozart-assert": "^1.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "Ilyes512\\EnumUtils\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Ilyes512\\EnumUtils\\Tests\\": "tests"
+        }
+    },
+    "scripts": {
+        "post-autoload-dump": "[ $COMPOSER_DEV_MODE -eq 0 ] || testbench optimize:clear",
+        "checkall": [
+            "composer validate",
+            "@lint",
+            "@checkstyle",
+            "@checktype",
+            "@test"
+        ],
+        "lint": "XDEBUG_MODE=off phplint --exclude=vendor .",
+        "test": [
+            "Composer\\Config::disableProcessTimeout",
+            "XDEBUG_MODE=off phpunit -d --without-creating-snapshots"
+        ],
+        "test-report": [
+            "Composer\\Config::disableProcessTimeout",
+            "XDEBUG_MODE=off php -dpcov.enabled=1 -dpcov.directory=. vendor/bin/phpunit -d --without-creating-snapshots --coverage-text --coverage-html coverage/html"
+        ],
+        "checkstyle": "XDEBUG_MODE=off phpcs -n",
+        "fixstyle": "XDEBUG_MODE=off phpcbf -n",
+        "checktype": "XDEBUG_MODE=off phpstan analyse --memory-limit=-1 -v",
+        "update-type-baseline": "XDEBUG_MODE=off phpstan --generate-baseline"
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0-dev"
+        },
+        "laravel": {
+            "providers": [
+                "Ilyes512\\EnumUtils\\EnumUtilsServiceProvider"
+            ]
+        }
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "scripts-descriptions": {
+        "checkall": "Run all checks including tests",
+        "lint": "Lint PHP files",
+        "test": "Run PHPUnit tests",
+        "test-report": "Run PHPUnit tests with coverage report",
+        "checkstyle": "Check code style using php_codesniffer",
+        "fixstyle": "Fix code style using php_codesniffer",
+        "checktype": "Check code type using PHPStan",
+        "update-type-baseline": "Update PHPStan baseline"
+    }
+}
