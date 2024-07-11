@@ -9,7 +9,7 @@
     <arg value="p"/> <!-- Show progress in report -->
 
     <file>src</file>
-    <file>config</file>
+    <file>lang</file>
     <file>tests</file>
 
     <rule ref="Ilyes512CodingStandard"/>
