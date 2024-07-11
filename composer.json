@@ -11,6 +11,8 @@
     "require": {
         "php": ">=8.3",
         "illuminate/support": "^11.0",
+        "illuminate/translation": "^9.0|^10.0|^11.0",
+        "ilyes512/enum-utils": "^0.2.0",
         "webmozart/assert": "^1.10"
     },
     "require-dev": {
@@ -22,7 +24,8 @@
         "orchestra/testbench": "^9.1",
         "overtrue/phplint": "^9.3",
         "phpstan/phpstan-mockery": "^1.1",
-        "phpstan/phpstan-webmozart-assert": "^1.2"
+        "phpstan/phpstan-webmozart-assert": "^1.2",
+        "spatie/phpunit-snapshot-assertions": "^5.1"
     },
     "autoload": {
         "psr-4": {
@@ -55,7 +58,8 @@
         "checkstyle": "XDEBUG_MODE=off phpcs -n",
         "fixstyle": "XDEBUG_MODE=off phpcbf -n",
         "checktype": "XDEBUG_MODE=off phpstan analyse --memory-limit=-1 -v",
-        "update-type-baseline": "XDEBUG_MODE=off phpstan --generate-baseline"
+        "update-type-baseline": "XDEBUG_MODE=off phpstan --generate-baseline",
+        "update-test-snapshots": "XDEBUG_MODE=off vendor/bin/phpunit -d --update-snapshots"
     },
     "extra": {
         "branch-alias": {
@@ -83,6 +87,7 @@
         "checkstyle": "Check code style using php_codesniffer",
         "fixstyle": "Fix code style using php_codesniffer",
         "checktype": "Check code type using PHPStan",
-        "update-type-baseline": "Update PHPStan baseline"
+        "update-type-baseline": "Update PHPStan baseline",
+        "update-test-snapshots": "Update PHPUnit snapshots"
     }
 }
