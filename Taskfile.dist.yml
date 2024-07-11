@@ -8,19 +8,175 @@ vars:
   LOCAL_PWD:
     sh: echo ${LOCAL_WORKSPACE_FOLDER:-$(pwd)}
 
+# env:
+#   BUILDKIT_PROGRESS: plain
+
 silent: true
 
 tasks:
 
-  stop:
-    desc: Stop Devcontainer
+  dc:
+    vars:
+      FIXUID:
+        sh: echo ${FIXUID:-$(id -u)}
+      FIXGID:
+        sh: echo ${FIXGID:-$(id -g)}
     cmds:
-      - docker compose stop
+      - >-
+        FIXUID={{.FIXUID}} FIXGID={{.FIXGID}}
+        docker compose
+        {{.DOCKER_COMPOSE_ARGS}} {{.CLI_ARGS}}
+
+  dc:run:
+    interactive: true
+    cmds:
+      - task: dc
+        vars: { DOCKER_COMPOSE_ARGS: "run --rm --user $(id -u):$(id -g)", CLI_ARGS: "{{.CLI_ARGS}}" }
+
+  dc:run:composer:
+    interactive: true
+    cmds:
+      - task: dc:run
+        vars: { CLI_ARGS: "--env=COMPOSER_DISABLE_XDEBUG_WARN=1 php composer {{.CLI_ARGS}}" }
+
+  build:
+    desc: Build all docker images
+    cmds:
+      - task: dc
+        vars: { DOCKER_COMPOSE_ARGS: "build --build-arg USER_UID=$(id -u)" }
+
+  up:
+    desc: Start development environment
+    cmds:
+      - task: dc
+        vars: { DOCKER_COMPOSE_ARGS: "up -d" }
+
+  stop:
+    desc: Stop development environment
+    cmds:
+      - task: dc
+        vars: { DOCKER_COMPOSE_ARGS: "stop" }
+
+  restart:
+    desc: Restart development environment
+    cmds:
+      - task: stop
+      - task: up
 
   down:
-    desc: Cleanup Devcontainer including volumes
+    desc: Down the development environment
     cmds:
-      - docker compose down --volumes
+      - task: dc
+        vars: { DOCKER_COMPOSE_ARGS: "down --volumes --remove-orphans" }
+
+  reset:
+    desc: Reset the development environment
+    cmds:
+      - task: down
+      - task: up
+
+  ps:
+    desc: Show all project container (including stopped ones)
+    aliases: [status]
+    cmds:
+      - task: dc
+        vars: { DOCKER_COMPOSE_ARGS: "ps -a" }
+
+  shell:
+    desc: Open shell in php container
+    cmds:
+      - task: dc
+        vars: { DOCKER_COMPOSE_ARGS: "exec php bash" }
+
+  checkall:
+    desc: Run all checks
+    cmds:
+      - task: dc:run:composer
+        vars: { CLI_ARGS: "run checkall" }
+      - task: md:checkstyle
+
+  composer:install:
+    desc: Install composer dependencies
+    cmds:
+      - task: dc:run:composer
+        vars: { CLI_ARGS: "install" }
+
+  composer:update-lockfile:
+    desc: Update composer lock file
+    cmds:
+      - task: dc:run:composer
+        vars: { CLI_ARGS: "update --lock" }
+
+  composer:update:
+    desc: Install composer dependencies (including all dependencies)
+    cmds:
+      - task: dc:run:composer
+        vars: { CLI_ARGS: "update --with-all-dependencies" }
+
+  composer:validate:
+    desc: Validate composer.json
+    cmds:
+      - task: dc:run:composer
+        vars: { CLI_ARGS: "validate" }
+
+  composer:checkstyle:
+    desc: Check code style using php_codesniffer
+    cmds:
+      - task: dc:run:composer
+        vars: { CLI_ARGS: "run checkstyle" }
+
+  composer:fixstyle:
+    desc: Fix code style using php_codesniffer
+    cmds:
+      - task: dc:run:composer
+        vars: { CLI_ARGS: "run fixstyle" }
+
+  composer:test:
+    desc: Run PHPUnit tests
+    cmds:
+      - task: dc:run:composer
+        vars: { CLI_ARGS: "run test" }
+
+  composer:test-report:
+    desc: Run PHPUnit tests with coverage report
+    cmds:
+      - task: dc:run:composer
+        vars: { CLI_ARGS: "run test-report" }
+
+  composer:update-test-snapshots:
+    desc: Update PHPUnit snapshots
+    cmds:
+      - task: dc:run:composer
+        vars: { CLI_ARGS: "run update-test-snapshots" }
+
+  composer:checktype:
+    desc: Check code type using PHPStan
+    cmds:
+      - task: dc:run:composer
+        vars: { CLI_ARGS: "run checktype" }
+
+  composer:update-type-baseline:
+    desc: Update PHPStan baseline
+    cmds:
+      - task: dc:run:composer
+        vars: { CLI_ARGS: "run update-type-baseline" }
+
+  md:checkstyle:
+    desc: Check style of Markdown files
+    cmds:
+      - docker run
+        --interactive
+        --tty
+        --rm
+        --volume {{.LOCAL_PWD}}:/workdir
+        davidanson/markdownlint-cli2:{{.MARKDOWNLINT_VERSION}}
+        {{.CLI_ARGS}}
+
+  md:fixstyle:
+    desc: Fix style of Markdown files
+    cmds:
+      - task: md:checkstyle
+        vars: { CLI_ARGS: --fix }
 
   cleanup:
     desc: Cleanup of almost all gitignored files and untracked files
@@ -43,20 +199,3 @@ tasks:
     cmds:
       - task: down
       - task: cleanup
-
-  md:checkstyle:
-    desc: Check style of Markdown files
-    cmds:
-      - docker run
-        --interactive
-        --tty
-        --rm
-        --volume {{.LOCAL_PWD}}:/workdir
-        davidanson/markdownlint-cli2:{{.MARKDOWNLINT_VERSION}}
-        {{.CLI_ARGS}}
-
-  md:fixstyle:
-    desc: Fix style of Markdown files
-    cmds:
-      - task: md:checkstyle
-        vars: { CLI_ARGS: --fix }

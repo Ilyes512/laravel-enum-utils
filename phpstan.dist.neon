@@ -11,5 +11,5 @@ parameters:
 	checkModelProperties: true
 	paths:
 		- src
-		- config
+		- lang
 		- tests
