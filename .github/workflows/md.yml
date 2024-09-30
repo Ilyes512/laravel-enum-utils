@@ -19,7 +19,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4.1.7
+        uses: actions/checkout@v4.2.0
 
       - name: Lint Markdown files
         uses: DavidAnson/markdownlint-cli2-action@v17.0.0
